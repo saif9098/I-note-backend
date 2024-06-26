@@ -59,7 +59,9 @@ app.use(mongoSanitize());
 app.use(express.json());
 app.use(cors());
 app.use(morgan("dev"));
-
+app.get("/",(req,resp)=>{
+  resp.send("work done")
+})
 //routes
 app.use("/api/v1/test", testRoutes);
 app.use("/api/v1/auth", authRoutes);
