@@ -1,6 +1,5 @@
 import express from "express";
 import {
-  getUserController,
   updateUserController,
 } from "../controllers/userController.js";
 import userAuth from "../middelwares/authMiddleware.js";
@@ -10,7 +9,9 @@ const router = express.Router();
 
 //routes
 // GET USER DATA || POST
-router.post("/getUser", userAuth, getUserController);
+router.get("/getUser", userAuth, (req, res) => {
+  res.status(200,"hello").send({ ok: true });
+});
 
 // UPDATE USER || PUT
 router.put("/update-user", userAuth, updateUserController);
