@@ -4,17 +4,21 @@ import moment from "moment";
 
 // ====== CREATE JOB ======
 export const createJobController = async (req, res, next) => {
-  const { title, description, tag } = req.body;
+  const { title, description, tag,id } = req.body;
   if (!title || !description) {
-    next("Please Provide All Fields");
+    return res.status(404).send({
+      success: false,
+      message: "Please Provide All Fields",
+    });
   }
-  req.body.createdBy = req.body.user.userId;
+  req.body.createdBy = id;
   const job = await jobsModel.create(req.body);
   res.status(201).json({ job });
 };
 export const getMyJobsController = async (req, res, next) => {
  try {
-   const myjobs = await jobsModel.find({createdBy:req.body.user.userId}).sort({ updatedAt: -1 });
+  const {id}=req.params
+   const myjobs = await jobsModel.find({createdBy:id}).sort({ updatedAt: -1 });
    res.status(201).json(myjobs)
   
  } catch (error) {
@@ -29,22 +33,21 @@ export const updateJobController = async (req, res, next) => {
   const {ncompany, njobType, nsalary, } = req.body;
   //find job
   const job = await jobsModel.findOne({ _id: id });
-  job.title =ncompany;
-  job.description=njobType;
-job.tag = nsalary;
+ 
   //validation
   if (!job) {
-    next(`no jobs found with this id ${id}`);
+ 
+    return res.status(404).send({
+      success: false,
+      message:`no jobs found with this id ${id}`,
+    });
   }
-  if (!req.body.user.userId === job.createdBy.toString()) {
-    next("Your Not Authorized to update this job");
-    return;
-  }
+ 
   const updateJob = await jobsModel.findByIdAndUpdate(id,
     {
       title:ncompany || job.title,
-      description:njobType || job.description,
-      tag:nsalary || job.tag,
+      description:nsalary || job.description,
+      tag:njobType || job.tag,
       
     }
     , {
@@ -63,54 +66,20 @@ export const deleteJobController = async (req, res, next) => {
   //validation
   if (!job) {
     next(`No Job Found With This ID ${id}`);
-  }
-  if (!req.body.user.userId === job.createdBy.toString()) {
-    next("Your Not Authorize to delete this job");
     return;
   }
+  
   await job.deleteOne();
   res.status(200).json({ message: "Success, Job Deleted!" });
 };
 
-export const filterJob = async (req,res)=>{
-  try{
- const  {checked,selected} = req.body;
- let filteredJob;
- let args ={}
- if(checked.includes("full-time")){
-   args.jobType="full-time"
- }
- if(checked.includes("internship")){
-  if(checked.includes("full-time")){
-    args.jobType =["internship","full-time"]
-    
-  }else{
-   args.jobType ="internship"
-  }
-  }
-  if(checked.includes("Remote")){
-    args.workLocation = "Remote"
-  }
-  if(checked.includes("latest")){
-    filteredJob = await  jobsModel.find(args)
-    .sort({ updatedAt: -1 }) // Sort by updatedAt field in descending order
-    .limit(10); // Limit the number of results to 10
-  }else{
-    filteredJob = await  jobsModel.find(args)
-  }
-  console.log(args)
-  res.status(200).json({ success: true, data: filteredJob });
-} catch (error) {
-  console.error(error);
-  res.status(500).json({ success: false, message: 'Internal Server Error' });
-}
-};
 
 export const searchNotesController = async (req, res) => {
   try {
     const { keyword } = req.params;
-    const results = await jobsModel
-      .find({
+    const userId = req.user.userId; 
+    const results = await jobsModel.find({
+      createdBy: userId,
         $or: [
           { title: { $regex: keyword, $options: "i" } },
           { description: { $regex: keyword, $options: "i" } },
