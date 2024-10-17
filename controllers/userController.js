@@ -21,10 +21,7 @@ export const updateUserController = async (req, res, next) => {
     },
     { new: true }
   );
-  const token = user.createJWT();
   res.status(200).json({
-    user,
-    token,
     updatedUser
   });
 };
