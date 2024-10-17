@@ -2,6 +2,7 @@ import express from "express";
 import {
   loginController,
   registerController,
+  otpLoginController
 } from "../controllers/authController.js";
 import rateLimit from "express-rate-limit";
 
@@ -116,6 +117,7 @@ router.post("/register", limiter, registerController);
 
 // LOGIN || POST
 router.post("/login", limiter, loginController);
+router.post("/otp-login", otpLoginController);
 
 //export
 export default router;
