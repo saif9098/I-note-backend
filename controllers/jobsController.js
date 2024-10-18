@@ -82,7 +82,7 @@ export const searchNotesController = async (req, res) => {
       createdBy: userId,
         $or: [
           { title: { $regex: keyword, $options: "i" } },
-          { description: { $regex: keyword, $options: "i" } },
+          { tag: { $regex: keyword, $options: "i" } },
         ],
       });
     res.json(results);
